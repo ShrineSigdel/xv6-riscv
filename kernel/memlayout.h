@@ -25,6 +25,13 @@
 #define VIRTIO0 0x10001000
 #define VIRTIO0_IRQ 1
 
+// QEMU virt machine test finisher (SiFive Test Device)
+// mapped at 0x100000 in the virt machine memory map
+// write 0x5555 to trigger a clean shutdown (FINISHER_PASS)
+// write 0x3333 to trigger a reboot
+// write 0x1234 to trigger a test failure (FINISHER_FAIL)
+#define VIRT_TEST   0x100000L
+
 // qemu puts platform-level interrupt controller (PLIC) here.
 #define PLIC 0x0c000000L
 #define PLIC_PRIORITY (PLIC + 0x0)

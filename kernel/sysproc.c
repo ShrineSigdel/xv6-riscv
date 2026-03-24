@@ -6,6 +6,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "vm.h"
+#include "memlayout.h"
 
 uint64
 sys_exit(void)
@@ -106,4 +107,17 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+// terminates the machine by writing to the QEMU virt test finisher.
+uint64
+sys_halt(void)
+{
+    printf("shutting down...\n");
+
+    // Fallback: QEMU virt test finisher
+    volatile uint *p = (volatile uint *)VIRT_TEST;
+    *p = 0x5555;
+
+    return 0; // not reached
 }
