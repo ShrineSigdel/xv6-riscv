@@ -25,6 +25,7 @@ char* sys_sbrk(int,int);
 int pause(int);
 int uptime(void);
 int halt(void);
+int getppid(void); // prototype for getppid syscall - Shrine
 
 // ulib.c
 int stat(const char*, struct stat*);
