@@ -1,6 +1,6 @@
-# Custom System Calls
+# GetPPid
 
-A collection of custom system calls added to xv6-riscv for educational purposes.
+GetPPid implementation for xv6
 
 ---
 
