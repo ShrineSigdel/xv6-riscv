@@ -134,3 +134,10 @@ sys_getppid(void)
 {
   return myproc()->parent->pid;
 }
+
+//Additional Custom Functions
+uint64
+sys_getnproc(void)
+{
+  return getnproc();
+}

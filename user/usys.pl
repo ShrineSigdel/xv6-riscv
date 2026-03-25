@@ -43,4 +43,5 @@ entry("sbrk");
 entry("pause");
 entry("uptime");
 entry("halt");
-entry("getppid"); 
+entry("getppid");
+entry ("getnproc"); #pawan
