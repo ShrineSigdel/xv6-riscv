@@ -147,7 +147,7 @@ UPROGS=\
 	$U/_dorphan\
 	$U/_off\
 	$U/_getppid\
-	$U/_testnproc #pawan
+	$U/_getnproc
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

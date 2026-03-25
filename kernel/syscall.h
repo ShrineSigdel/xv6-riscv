@@ -22,4 +22,4 @@
 #define SYS_close 21
 #define SYS_getppid 22 // assigned to getppid syscall number 22 - Shrine
 #define SYS_halt  23
-#define SYS_getnproc 24 //To get number of Processes - Pawan
+#define SYS_getnproc 24 //To get number of Processes 

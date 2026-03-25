@@ -44,4 +44,4 @@ entry("pause");
 entry("uptime");
 entry("halt");
 entry("getppid");
-entry ("getnproc"); #pawan
+entry ("getnproc");
