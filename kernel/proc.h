@@ -104,4 +104,10 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  //custom:
+  int priority;        // 0–3
+  int ticks[4];        // ticks used at each level
+  int wait_ticks[4];   // waiting time (for boosting)
+  int curr_ticks;      // ticks used in current slice
 };

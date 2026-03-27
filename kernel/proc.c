@@ -146,6 +146,15 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  //custom scheduler initializations
+  p->priority = 3;  // start at highest
+  p->curr_ticks = 0;
+
+  for(int i = 0; i < 4; i++){
+    p->ticks[i] = 0;
+    p->wait_ticks[i] = 0;
+  }
+
   return p;
 }
 
@@ -424,42 +433,72 @@ kwait(uint64 addr)
 void
 scheduler(void)
 {
-  struct proc *p;
-  struct cpu *c = mycpu();
+    struct proc *p;
+    struct cpu *c = mycpu();
 
-  c->proc = 0;
-  for(;;){
-    // The most recent process to run may have had interrupts
-    // turned off; enable them to avoid a deadlock if all
-    // processes are waiting. Then turn them back off
-    // to avoid a possible race between an interrupt
-    // and wfi.
-    intr_on();
-    intr_off();
+    c->proc = 0;
 
-    int found = 0;
-    for(p = proc; p < &proc[NPROC]; p++) {
-      acquire(&p->lock);
-      if(p->state == RUNNABLE) {
-        // Switch to chosen process.  It is the process's job
-        // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
+    for(;;){
+        // Enable interrupts briefly to avoid deadlock, then disable
+        intr_on();
+        intr_off();
 
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
-        found = 1;
-      }
-      release(&p->lock);
+        int found = 0;
+
+        // 1. Scan queues from highest (3) to lowest (0)
+        for(int level = 3; level >= 0; level--){
+            for(p = proc; p < &proc[NPROC]; p++){
+                acquire(&p->lock);
+
+                if(p->state == RUNNABLE && p->priority == level){
+                    // Found a runnable process at this priority
+                    p->state = RUNNING;
+                    c->proc = p;
+
+                    // Switch to the chosen process
+                    swtch(&c->context, &p->context);
+
+                    // Process is done running for now
+                    c->proc = 0;
+
+                    // Reset current ticks if process yielded voluntarily
+                    // (curr_ticks is maintained in timer interrupt)
+                    found = 1;
+
+                    release(&p->lock);
+                    goto process_scheduled; // exit both loops
+                }
+
+                release(&p->lock);
+            }
+        }
+
+process_scheduled:
+
+        // 2. If no runnable process, wait for an interrupt
+        if(found == 0){
+            asm volatile("wfi");
+        }
+
+        // 3. Update waiting ticks for all runnable processes
+        // This helps implement priority boosting (anti-starvation)
+        for(p = proc; p < &proc[NPROC]; p++){
+            acquire(&p->lock);
+            if(p->state == RUNNABLE){
+                p->wait_ticks[p->priority]++;
+
+                // Simple priority boost: if waited too long, promote
+                if(p->wait_ticks[p->priority] >= 10 * time_slice(p->priority)){
+                    if(p->priority < 3){
+                        p->priority++;
+                        p->wait_ticks[p->priority] = 0;
+                        p->curr_ticks = 0; // reset slice on promotion
+                    }
+                }
+            }
+            release(&p->lock);
+        }
     }
-    if(found == 0) {
-      // nothing to run; stop running on this core until an interrupt.
-      asm volatile("wfi");
-    }
-  }
 }
 
 // Switch to scheduler.  Must hold only p->lock
@@ -704,4 +743,13 @@ getnproc(void)
   }
 
   return count;
+}
+
+
+int
+time_slice(int priority){
+  if(priority == 3) return 8;
+  if(priority == 2) return 16;
+  if(priority == 1) return 32;
+  return -1; // infinite for level 0
 }
