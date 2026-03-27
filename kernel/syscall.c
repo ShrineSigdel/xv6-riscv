@@ -126,8 +126,10 @@ static uint64 (*syscalls[])(void) = {
     [SYS_mkdir] sys_mkdir,
     [SYS_close] sys_close,
     [SYS_halt] sys_halt,
+    //custom
     [SYS_getppid] sys_getppid, // entry for getppid syscall - Shrine
-    [SYS_getnproc] sys_getnproc, //for getnproc
+    [SYS_getnproc] sys_getnproc,
+    [SYS_getpinfo]   sys_getpinfo,
 };
 
 void syscall(void)

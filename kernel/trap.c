@@ -80,9 +80,29 @@ usertrap(void)
   if(killed(p))
     kexit(-1);
 
-  // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
-    yield();
+  // give up the CPU if this is a timer interrupt
+  //Update the MLFQ fields for the process
+  if(which_dev == 2){ // timer interrupt
+      struct proc *p = myproc();
+      if(p){
+          p->curr_ticks++;
+          p->ticks[p->priority]++;
+
+          int slice = time_slice(p->priority);
+
+          // only demote if slice is finite
+          if(slice > 0 && p->curr_ticks >= slice){
+              if(p->priority > 0){
+                  p->priority--;      // demote
+              }
+              p->curr_ticks = 0;
+              yield();               // forcibly preempt
+          } else {
+              // still within slice, optionally yield for RR fairness
+              // for highest priority, can let continue until slice done
+          }
+      }
+  }
 
   prepare_return();
 

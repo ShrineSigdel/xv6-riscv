@@ -423,6 +423,16 @@ kwait(uint64 addr)
   }
 }
 
+//helper function for MLFQ scheduling
+int
+time_slice(int priority){
+  if(priority == 3) return 8;
+  if(priority == 2) return 16;
+  if(priority == 1) return 32;
+  return -1; // infinite for level 0
+}
+
+
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -746,10 +756,33 @@ getnproc(void)
 }
 
 
-int
-time_slice(int priority){
-  if(priority == 3) return 8;
-  if(priority == 2) return 16;
-  if(priority == 1) return 32;
-  return -1; // infinite for level 0
+// sys_getpinfo returns number of processes (or -1)
+uint64
+sys_getpinfo(void)
+{
+    uint64 user_ptr;
+    argaddr(0, &user_ptr);  // fetch the first argument (pointer to struct pinfo in user space)
+
+    struct proc *p;
+    struct pinfo info[NPROC];
+    int i = 0;
+
+    for(p = proc; p < &proc[NPROC]; p++){
+        acquire(&p->lock);
+        if(p->state != UNUSED){
+            info[i].pid = p->pid;
+            info[i].priority = p->priority;
+            info[i].curr_ticks = p->curr_ticks;
+            for(int j = 0; j < 4; j++)
+                info[i].ticks[j] = p->ticks[j];
+            i++;
+        }
+        release(&p->lock);
+    }
+
+    // copy to user memory
+    if(copyout(myproc()->pagetable, user_ptr, (char*)info, sizeof(info)) < 0)
+        return (uint64)-1;
+
+    return (uint64)i;
 }

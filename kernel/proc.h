@@ -111,3 +111,15 @@ struct proc {
   int wait_ticks[4];   // waiting time (for boosting)
   int curr_ticks;      // ticks used in current slice
 };
+
+// MLFQ helper
+int time_slice(int priority);
+
+
+// MLFQ process info for debugging
+struct pinfo {
+    int pid;             // process id
+    int priority;        // current priority
+    int curr_ticks;      // ticks used in current slice
+    int ticks[4];        // total ticks at each priority level
+};
