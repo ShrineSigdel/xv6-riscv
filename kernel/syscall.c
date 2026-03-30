@@ -99,6 +99,7 @@ extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_halt(void);
 extern uint64 sys_getppid(void); // prototype for getppid syscall - Shrine
+extern uint64 sys_getnproc(void); //For: get number of processes
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -125,7 +126,10 @@ static uint64 (*syscalls[])(void) = {
     [SYS_mkdir] sys_mkdir,
     [SYS_close] sys_close,
     [SYS_halt] sys_halt,
+    //custom
     [SYS_getppid] sys_getppid, // entry for getppid syscall - Shrine
+    [SYS_getnproc] sys_getnproc,
+    [SYS_getpinfo]   sys_getpinfo,
 };
 
 void syscall(void)

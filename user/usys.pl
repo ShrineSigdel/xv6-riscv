@@ -43,4 +43,7 @@ entry("sbrk");
 entry("pause");
 entry("uptime");
 entry("halt");
-entry("getppid"); 
+# custom
+entry("getppid");
+entry ("getnproc");
+entry("getpinfo");

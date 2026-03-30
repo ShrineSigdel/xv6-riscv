@@ -26,6 +26,9 @@ int pause(int);
 int uptime(void);
 int halt(void);
 int getppid(void); // prototype for getppid syscall - Shrine
+int getnproc(void); //For getnproc
+struct pinfo;  // forward declaration
+int getpinfo(struct pinfo *info);
 
 // ulib.c
 int stat(const char*, struct stat*);
